@@ -40,6 +40,7 @@ try:
     RESULTS_WANTED = int(GENERAL["results_wanted"])
     DELAY_BETWEEN_SEARCHES = int(GENERAL["delay_between_searches_seconds"])
     FETCH_FULL_DESCRIPTION = GENERAL["fetch_full_description"].strip().lower() == "true"
+    LINKEDIN_FETCH_FULL_DESCRIPTION = GENERAL["linkedin_fetch_full_description"].strip().lower() == "true"
 
     MAX_EXPERIENCE_YEARS = int(GENERAL["max_experience_years"])
     MUMBAI_AREA_KEYWORDS = _csv(GENERAL["mumbai_area_keywords"])

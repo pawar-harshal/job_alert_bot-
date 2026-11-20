@@ -44,7 +44,7 @@ def search_all_terms():
                 results_wanted=Configuration.RESULTS_WANTED,
                 hours_old=Configuration.HOURS_OLD,
                 country_indeed=Configuration.COUNTRY_INDEED,
-                linkedin_fetch_description=Configuration.FETCH_FULL_DESCRIPTION,
+                linkedin_fetch_description=Configuration.LINKEDIN_FETCH_FULL_DESCRIPTION,
                 fetch_description=Configuration.FETCH_FULL_DESCRIPTION,
             )
         except Exception as exc:
