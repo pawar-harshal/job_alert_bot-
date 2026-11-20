@@ -4,7 +4,7 @@ Each individual filter lives in its own module (Location.py,
 Experience.py, Stack.py) so any one of them can be changed or tested
 without touching the others.
 """
-from job_alert_bot.filtering import Experience, Location, Stack
+from job_alert_bot.filtering import Experience, Location, Stack, Title
 from job_alert_bot.utils.Logger import get_logger
 
 log = get_logger("filtering")
@@ -21,6 +21,10 @@ def should_alert(row: dict):
     """
     if not Location.passes(row):
         return False, "location not in Mumbai area / not remote", ""
+
+    title_ok, title_reason = Title.passes(row)
+    if not title_ok:
+        return False, title_reason, ""
 
     stack_ok, stack_reason = Stack.passes(row)
     if not stack_ok:

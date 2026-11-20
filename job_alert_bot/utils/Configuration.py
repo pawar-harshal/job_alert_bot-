@@ -49,6 +49,11 @@ try:
     ALL_INCLUDE_KEYWORDS = CORE_STACK_KEYWORDS + ADAPTABLE_STACK_KEYWORDS
     EXCLUDE_STACK_KEYWORDS = _csv(GENERAL["exclude_stack_keywords"])
 
+    # Checked against the job TITLE only (see filtering/Title.py) --
+    # drops roles like "Senior ...", "Data Scientist", "DevOps ..."
+    # outright, regardless of stack match or parsed experience.
+    EXCLUDE_TITLE_KEYWORDS = _csv(GENERAL["exclude_title_keywords"])
+
     LOGGING_LEVEL = str(GENERAL["logging_level"])
 
     # LLM used for email drafting (and later, career-page matching).

@@ -41,6 +41,14 @@ def send_message(text: str) -> bool:
 
 
 def format_job_entry(index: int, row: dict, experience_note: str) -> str:
+    """
+    Deliberately minimal: title, company, location, source, and the
+    platform link only. No description snippet, experience note,
+    career-page line, or HR-contact line -- kept out of the alert text
+    on purpose (short, scannable message), even though all of that is
+    still computed elsewhere (career_page_url, hr_contact) for /mail
+    and logging to use.
+    """
     title = row.get("title") or "Untitled role"
     company = row.get("company") or "Unknown company"
     loc = row.get("location") or "Location not listed"
@@ -49,28 +57,14 @@ def format_job_entry(index: int, row: dict, experience_note: str) -> str:
     date_posted = row.get("date_posted") or "unknown date"
     remote_tag = " · Remote" if Location.is_remote(row) else ""
 
-    career_page_url = row.get("career_page_url")
-    hr_contact = row.get("hr_contact")
-
-    desc = (row.get("description") or "").strip().replace("\n", " ")
-    snippet = (desc[:220] + "…") if len(desc) > 220 else desc
-
     lines = [
         f"{index}. <b>{title}</b>",
         f"🏢 {company}",
         f"📍 {loc}{remote_tag}",
         f"🌐 Source: {site}  ·  Posted: {date_posted}",
     ]
-    if experience_note:
-        lines.append(f"🧭 {experience_note}")
-    if snippet:
-        lines.append(snippet)
     if url:
         lines.append(f"🔗 Platform: {url}")
-    if career_page_url:
-        lines.append(f"🏠 Career page: {career_page_url}")
-    if hr_contact:
-        lines.append(f"✉️ HR contact: {hr_contact}")
 
     return "\n".join(lines)
 
