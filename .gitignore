@@ -1,0 +1,11 @@
+config.ini
+__pycache__/
+*.pyc
+.idea/
+build/
+*.egg-info/
+venv/
+.venv/
+*.log
+logs/
+*.db
