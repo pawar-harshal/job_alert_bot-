@@ -88,7 +88,7 @@ def run_once():
             # nothing matches, the digest just shows the platform link
             # as before.
             try:
-                domain = HrContact.domain_from_url(row.get("company_url"))
+                domain = HrContact.domain_from_row(row)
                 career_page_url = CareerPageFinder.find_career_page_listing(company, title, domain)
                 if career_page_url:
                     row["career_page_url"] = career_page_url

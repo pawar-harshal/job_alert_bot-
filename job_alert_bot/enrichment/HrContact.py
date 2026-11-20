@@ -14,7 +14,8 @@ Orchestrates, in order, for a given company:
        configured, no profile found, or no confident email for that
        person), fall through to HunterContact's domain search, then
        ApolloContact, in that order.
-    4. A labelled careers@domain guess -- if nothing above found
+    4. A labelled hr@domain guess (generic, never person-name-based) --
+       if nothing above found
        anything, this is returned UNVERIFIED rather than as a confirmed
        contact.
 Whatever is found (or guessed) is cached, so step 1 is a hit for every
@@ -53,6 +54,41 @@ def domain_from_url(url: Optional[str]) -> Optional[str]:
     except Exception as exc:
         log.warning("Could not parse a domain out of URL '%s': %s", url, exc)
         return None
+
+
+# Job platforms themselves, never a real employer's domain. jobspy's
+# "company_url" field is frequently the PLATFORM's own company profile
+# page (e.g. LinkedIn's "nl.linkedin.com/company/acme") rather than the
+# employer's actual website -- guessing an email at one of these would
+# produce nonsense like "hr@nl.linkedin.com". Checked with endswith so
+# any regional subdomain (nl., de., in., ...) is caught too.
+_JOB_PLATFORM_DOMAINS = (
+    "linkedin.com", "indeed.com", "naukri.com", "glassdoor.com",
+    "ziprecruiter.com", "bayt.com",
+)
+
+
+def _is_job_platform_domain(domain: str) -> bool:
+    domain = domain.lower()
+    return any(domain == d or domain.endswith(f".{d}") for d in _JOB_PLATFORM_DOMAINS)
+
+
+def domain_from_row(row: dict) -> Optional[str]:
+    """
+    Pulls the company's REAL domain out of a jobspy row -- the entry
+    point callers with a job row (not just a bare URL) should use
+    instead of domain_from_url() directly. Prefers "company_url_direct"
+    (jobspy's field for the employer's own external site, when it found
+    one) over "company_url" (often just the platform's own company
+    profile page -- see _JOB_PLATFORM_DOMAINS above). Either field
+    resolving to a known job-platform domain is treated the same as it
+    being missing, rather than trusted as the employer's domain.
+    """
+    for key in ("company_url_direct", "company_url"):
+        domain = domain_from_url(row.get(key))
+        if domain and not _is_job_platform_domain(domain):
+            return domain
+    return None
 
 
 def find_hr_contact(company: str, company_domain: Optional[str] = None):
@@ -98,10 +134,15 @@ def find_hr_contact(company: str, company_domain: Optional[str] = None):
             cache.set(company_domain, result["email"], result["verified"], result["source"])
             return result
 
-        # Nothing above found a real contact -- offer a labelled guess
-        # rather than nothing. Still cached, so we don't keep re-asking
-        # every provider about a company that has nothing.
-        guess_email = f"careers@{company_domain}"
+        # Nothing above found a real, confirmed contact -- fall back to
+        # a generic hr@domain guess rather than nothing. Deliberately
+        # NOT a person-name-based guess (e.g. firstname.lastname@domain)
+        # -- a generic HR mailbox is far more likely to actually exist
+        # and be monitored than a guessed pattern for one specific
+        # person, and it's never embarrassingly wrong about who someone
+        # is. Still cached, so we don't keep re-asking every provider
+        # about a company that has nothing.
+        guess_email = f"hr@{company_domain}"
         result = {"email": guess_email, "verified": False, "source": "guess", "profile_url": None}
         cache.set(company_domain, result["email"], result["verified"], result["source"])
         log.info("No confirmed HR contact for '%s' -- using unverified guess %s.", company, guess_email)

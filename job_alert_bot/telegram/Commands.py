@@ -73,7 +73,7 @@ def handle_mail_command(job_number: int):
     title = job.get("title") or "the role"
     company = job.get("company") or "the company"
 
-    domain = HrContact.domain_from_url(job.get("company_url"))
+    domain = HrContact.domain_from_row(job)
     contact = HrContact.find_hr_contact(company, domain) if domain else None
     contact_email = contact["email"] if contact else None
 
